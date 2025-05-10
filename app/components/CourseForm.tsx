@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 
 interface Course {
@@ -12,10 +12,21 @@ interface Course {
   status: 'in_progress' | 'finished';
 }
 
+interface FilterStats {
+  tag: { [key: string]: number };
+  instructor: { [key: string]: number };
+  status: { [key: string]: number };
+}
+
 const CourseForm = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  const [filters, setFilters] = useState({
+    tag: '',
+    instructor: '',
+    status: ''
+  });
   const rowsPerPage = 10;
   const [formData, setFormData] = useState<Omit<Course, 'id'>>({
     course_name: '',
@@ -24,6 +35,46 @@ const CourseForm = () => {
     instructor_name: '',
     status: 'in_progress'
   });
+
+  // Calculate filter stats
+  const filterStats = useMemo(() => {
+    const stats: FilterStats = {
+      tag: {},
+      instructor: {},
+      status: {}
+    };
+
+    courses.forEach(course => {
+      // Count tags
+      course.tags.split(',').forEach(tag => {
+        const trimmedTag = tag.trim();
+        stats.tag[trimmedTag] = (stats.tag[trimmedTag] || 0) + 1;
+      });
+
+      // Count instructors
+      stats.instructor[course.instructor_name] = (stats.instructor[course.instructor_name] || 0) + 1;
+
+      // Count status
+      stats.status[course.status] = (stats.status[course.status] || 0) + 1;
+    });
+
+    return stats;
+  }, [courses]);
+
+  // Filter courses based on selected filters
+  const filteredCourses = useMemo(() => {
+    return courses.filter(course => {
+      const matchesTag = !filters.tag || course.tags.split(',').some(tag => tag.trim() === filters.tag);
+      const matchesInstructor = !filters.instructor || course.instructor_name === filters.instructor;
+      const matchesStatus = !filters.status || course.status === filters.status;
+      return matchesTag && matchesInstructor && matchesStatus;
+    });
+  }, [courses, filters]);
+
+  // Get unique values for filter dropdowns
+  const uniqueTags = useMemo(() => Object.keys(filterStats.tag), [filterStats.tag]);
+  const uniqueInstructors = useMemo(() => Object.keys(filterStats.instructor), [filterStats.instructor]);
+  const uniqueStatuses = useMemo(() => Object.keys(filterStats.status), [filterStats.status]);
 
   useEffect(() => {
     // Clear localStorage for testing
@@ -167,14 +218,31 @@ const CourseForm = () => {
     });
   };
 
-  // Pagination calculations
-  const totalPages = Math.ceil(courses.length / rowsPerPage);
+  // Pagination calculations with filtered courses
+  const totalPages = Math.ceil(filteredCourses.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-  const currentCourses = courses.slice(startIndex, endIndex);
+  const currentCourses = filteredCourses.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleFilterChange = (type: keyof typeof filters, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [type]: value
+    }));
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      tag: '',
+      instructor: '',
+      status: ''
+    });
+    setCurrentPage(1);
   };
 
   return (
@@ -263,6 +331,95 @@ const CourseForm = () => {
         </form>
       </div>
 
+      <div className="relative p-[2px] rounded-lg bg-gradient-to-r from-purple-dark via-purple-medium to-purple-light mb-8">
+        <div className="bg-white rounded-lg p-6">
+          <div className="flex flex-wrap gap-4 items-end mb-6">
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Tag</label>
+              <select
+                value={filters.tag}
+                onChange={(e) => handleFilterChange('tag', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="">All Tags</option>
+                {uniqueTags.map(tag => (
+                  <option key={tag} value={tag}>
+                    {tag} ({filterStats.tag[tag]})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Instructor</label>
+              <select
+                value={filters.instructor}
+                onChange={(e) => handleFilterChange('instructor', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="">All Instructors</option>
+                {uniqueInstructors.map(instructor => (
+                  <option key={instructor} value={instructor}>
+                    {instructor} ({filterStats.instructor[instructor]})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Status</label>
+              <select
+                value={filters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="">All Status</option>
+                {uniqueStatuses.map(status => (
+                  <option key={status} value={status}>
+                    {status === 'finished' ? 'Finished' : 'In Progress'} ({filterStats.status[status]})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              onClick={clearFilters}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Clear Filters
+            </button>
+          </div>
+
+          {/* Stats Summary Section */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-200">
+            <div className="bg-purple-50 rounded-lg p-4">
+              <h3 className="text-sm font-medium text-purple-800">Total Courses</h3>
+              <p className="mt-1 text-2xl font-semibold text-purple-900">
+                {filteredCourses.length}
+                <span className="text-sm font-normal text-purple-600 ml-2">
+                  {filters.tag || filters.instructor || filters.status ? '(Filtered)' : ''}
+                </span>
+              </p>
+            </div>
+            <div className="bg-purple-50 rounded-lg p-4">
+              <h3 className="text-sm font-medium text-purple-800">Total Instructors</h3>
+              <p className="mt-1 text-2xl font-semibold text-purple-900">
+                {Object.keys(filterStats.instructor).length}
+                <span className="text-sm font-normal text-purple-600 ml-2">
+                  {filters.instructor ? '(Filtered)' : ''}
+                </span>
+              </p>
+            </div>
+            <div className="bg-purple-50 rounded-lg p-4">
+              <h3 className="text-sm font-medium text-purple-800">Total Hours</h3>
+              <p className="mt-1 text-2xl font-semibold text-purple-900">
+                {filteredCourses.reduce((sum, course) => sum + course.hours, 0)}
+                <span className="text-sm font-normal text-purple-600 ml-2">
+                  {filters.tag || filters.instructor || filters.status ? '(Filtered)' : ''}
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="relative p-[2px] rounded-lg bg-gradient-to-r from-purple-dark via-purple-medium to-purple-light">
         <div className="bg-white rounded-lg overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
@@ -281,7 +438,20 @@ const CourseForm = () => {
                 <tr key={course.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{course.course_name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{course.hours}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{course.tags}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {course.tags.split(',').map((tag, index) => (
+                      <span
+                        key={index}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mr-1 mb-1 ${
+                          filters.tag === tag.trim()
+                            ? 'bg-purple-100 text-purple-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
+                        {tag.trim()}
+                      </span>
+                    ))}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{course.instructor_name}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -311,6 +481,19 @@ const CourseForm = () => {
                 </tr>
               ))}
             </tbody>
+            <tfoot className="bg-gray-50">
+              <tr>
+                <td colSpan={6} className="px-6 py-4">
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm text-gray-700">
+                      Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+                      <span className="font-medium">{Math.min(endIndex, filteredCourses.length)}</span> of{' '}
+                      <span className="font-medium">{filteredCourses.length}</span> results
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tfoot>
           </table>
           
           {/* Pagination Controls */}
@@ -336,8 +519,8 @@ const CourseForm = () => {
                 <div>
                   <p className="text-sm text-gray-700">
                     Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
-                    <span className="font-medium">{Math.min(endIndex, courses.length)}</span> of{' '}
-                    <span className="font-medium">{courses.length}</span> results
+                    <span className="font-medium">{Math.min(endIndex, filteredCourses.length)}</span> of{' '}
+                    <span className="font-medium">{filteredCourses.length}</span> results
                   </p>
                 </div>
                 <div>
