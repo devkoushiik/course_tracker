@@ -27,6 +27,9 @@ const CourseForm = () => {
     instructor: '',
     status: ''
   });
+  const [showWarning, setShowWarning] = useState(false);
+  const [countdown, setCountdown] = useState(10);
+  const [canConfirm, setCanConfirm] = useState(false);
   const rowsPerPage = 10;
   const [formData, setFormData] = useState<Omit<Course, 'id'>>({
     course_name: '',
@@ -35,6 +38,14 @@ const CourseForm = () => {
     instructor_name: '',
     status: 'in_progress'
   });
+
+  useEffect(() => {
+    // Load saved courses from localStorage
+    const savedCourses = localStorage.getItem('courses');
+    if (savedCourses) {
+      setCourses(JSON.parse(savedCourses));
+    }
+  }, []);
 
   // Calculate filter stats
   const filterStats = useMemo(() => {
@@ -48,7 +59,9 @@ const CourseForm = () => {
       // Count tags
       course.tags.split(',').forEach(tag => {
         const trimmedTag = tag.trim();
-        stats.tag[trimmedTag] = (stats.tag[trimmedTag] || 0) + 1;
+        if (trimmedTag) {
+          stats.tag[trimmedTag] = (stats.tag[trimmedTag] || 0) + 1;
+        }
       });
 
       // Count instructors
@@ -75,37 +88,6 @@ const CourseForm = () => {
   const uniqueTags = useMemo(() => Object.keys(filterStats.tag), [filterStats.tag]);
   const uniqueInstructors = useMemo(() => Object.keys(filterStats.instructor), [filterStats.instructor]);
   const uniqueStatuses = useMemo(() => Object.keys(filterStats.status), [filterStats.status]);
-
-  useEffect(() => {
-    // Clear localStorage for testing
-    localStorage.removeItem('courses');
-    
-    const savedCourses = localStorage.getItem('courses');
-    if (savedCourses) {
-      setCourses(JSON.parse(savedCourses));
-    } else {
-      // TODO: Remove this dummy data later
-      const dummyCourses: Course[] = [
-        { id: '1', course_name: 'React Fundamentals', hours: 12, tags: 'React, JavaScript', instructor_name: 'John Doe', status: 'finished' },
-        { id: '2', course_name: 'Advanced TypeScript', hours: 15, tags: 'TypeScript, JavaScript', instructor_name: 'Jane Smith', status: 'in_progress' },
-        { id: '3', course_name: 'Node.js Masterclass', hours: 20, tags: 'Node.js, JavaScript', instructor_name: 'Mike Johnson', status: 'finished' },
-        { id: '4', course_name: 'Python for Data Science', hours: 25, tags: 'Python, Data Science', instructor_name: 'Sarah Wilson', status: 'in_progress' },
-        { id: '5', course_name: 'Machine Learning Basics', hours: 30, tags: 'ML, Python', instructor_name: 'David Brown', status: 'finished' },
-        { id: '6', course_name: 'Web Development Bootcamp', hours: 40, tags: 'HTML, CSS, JavaScript', instructor_name: 'Emily Davis', status: 'in_progress' },
-        { id: '7', course_name: 'Docker & Kubernetes', hours: 18, tags: 'DevOps, Docker', instructor_name: 'Chris Lee', status: 'finished' },
-        { id: '8', course_name: 'AWS Cloud Practitioner', hours: 22, tags: 'AWS, Cloud', instructor_name: 'Lisa Anderson', status: 'in_progress' },
-        { id: '9', course_name: 'GraphQL API Design', hours: 14, tags: 'GraphQL, API', instructor_name: 'Tom Wilson', status: 'finished' },
-        { id: '10', course_name: 'MongoDB Mastery', hours: 16, tags: 'MongoDB, Database', instructor_name: 'Rachel Green', status: 'in_progress' },
-        { id: '11', course_name: 'Flutter Development', hours: 28, tags: 'Flutter, Mobile', instructor_name: 'Alex Turner', status: 'finished' },
-        { id: '12', course_name: 'DevOps Essentials', hours: 24, tags: 'DevOps, CI/CD', instructor_name: 'Sophie Martin', status: 'in_progress' },
-        { id: '13', course_name: 'Blockchain Basics', hours: 20, tags: 'Blockchain, Crypto', instructor_name: 'James Wilson', status: 'finished' },
-        { id: '14', course_name: 'UI/UX Design', hours: 18, tags: 'Design, Figma', instructor_name: 'Emma Thompson', status: 'in_progress' },
-        { id: '15', course_name: 'Cybersecurity Fundamentals', hours: 25, tags: 'Security, Network', instructor_name: 'Daniel Clark', status: 'finished' }
-      ];
-      setCourses(dummyCourses);
-      localStorage.setItem('courses', JSON.stringify(dummyCourses));
-    }
-  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -218,22 +200,12 @@ const CourseForm = () => {
     });
   };
 
-  // Pagination calculations with filtered courses
-  const totalPages = Math.ceil(filteredCourses.length / rowsPerPage);
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const currentCourses = filteredCourses.slice(startIndex, endIndex);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
   const handleFilterChange = (type: keyof typeof filters, value: string) => {
     setFilters(prev => ({
       ...prev,
       [type]: value
     }));
-    setCurrentPage(1); // Reset to first page when filter changes
+    setCurrentPage(1);
   };
 
   const clearFilters = () => {
@@ -245,92 +217,143 @@ const CourseForm = () => {
     setCurrentPage(1);
   };
 
+  const handleClearAllCourses = () => {
+    setShowWarning(true);
+    setCountdown(10);
+    setCanConfirm(false);
+  };
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (showWarning && countdown > 0) {
+      timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+        if (countdown === 1) {
+          setCanConfirm(true);
+        }
+      }, 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [showWarning, countdown]);
+
+  const confirmClearAll = () => {
+    if (!canConfirm) return;
+    setCourses([]);
+    localStorage.removeItem('courses');
+    setShowWarning(false);
+    setCanConfirm(false);
+    toast.success('All courses have been cleared!', {
+      duration: 3000,
+      position: 'top-center',
+      style: {
+        background: '#7A1CAC',
+        color: '#fff',
+      },
+    });
+  };
+
+  // Pagination calculations with filtered courses
+  const totalPages = Math.ceil(filteredCourses.length / rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const currentCourses = filteredCourses.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-6 pt-8">
       <Toaster />
+      
+      {/* Course Input Form */}
       <div className="relative p-[2px] rounded-lg bg-gradient-to-r from-purple-dark via-purple-medium to-purple-light mb-8">
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
-              <input
-                type="text"
-                name="course_name"
-                value={formData.course_name}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                required
-                placeholder="e.g., React Fundamentals"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Hours</label>
-              <input
-                type="number"
-                name="hours"
-                value={formData.hours}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                required
-                placeholder="e.g., 10"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
-              <input
-                type="text"
-                name="tags"
-                value={formData.tags}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="e.g., React, JavaScript"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Instructor Name</label>
-              <input
-                type="text"
-                name="instructor_name"
-                value={formData.instructor_name}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                required
-                placeholder="e.g., John Doe"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
-                <option value="in_progress">In Progress</option>
-                <option value="finished">Finished</option>
-              </select>
-            </div>
-            <div className="flex items-end gap-2">
-              <button
-                type="submit"
-                className="flex-1 bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition-colors"
-              >
-                {editingCourse ? 'Update Course' : 'Add Course'}
-              </button>
-              {editingCourse && (
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+        <div className="bg-white rounded-lg p-6">
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
+                <input
+                  type="text"
+                  name="course_name"
+                  value={formData.course_name}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
+                  placeholder="e.g., React Fundamentals"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Hours</label>
+                <input
+                  type="number"
+                  name="hours"
+                  value={formData.hours}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
+                  min="0"
+                  placeholder="e.g., 10"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                <input
+                  type="text"
+                  name="tags"
+                  value={formData.tags}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="e.g., React, JavaScript"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Instructor Name</label>
+                <input
+                  type="text"
+                  name="instructor_name"
+                  value={formData.instructor_name}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
+                  placeholder="e.g., John Doe"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
-                  Cancel
+                  <option value="in_progress">In Progress</option>
+                  <option value="finished">Finished</option>
+                </select>
+              </div>
+              <div className="flex items-end gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition-colors"
+                >
+                  {editingCourse ? 'Update Course' : 'Add Course'}
                 </button>
-              )}
+                {editingCourse && (
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
 
+      {/* Filters Section */}
       <div className="relative p-[2px] rounded-lg bg-gradient-to-r from-purple-dark via-purple-medium to-purple-light mb-8">
         <div className="bg-white rounded-lg p-6">
           <div className="flex flex-wrap gap-4 items-end mb-6">
@@ -420,6 +443,7 @@ const CourseForm = () => {
         </div>
       </div>
 
+      {/* Table Section */}
       <div className="relative p-[2px] rounded-lg bg-gradient-to-r from-purple-dark via-purple-medium to-purple-light">
         <div className="bg-white rounded-lg overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
@@ -557,8 +581,64 @@ const CourseForm = () => {
               </div>
             </div>
           )}
+
+          {/* Clear All Courses Button */}
+          <div className="bg-white px-4 py-3 border-t border-gray-200">
+            <div className="flex justify-end">
+              <button
+                onClick={handleClearAllCourses}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                Clear All Courses
+              </button>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Warning Modal */}
+      {showWarning && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Warning: Clear All Courses</h3>
+            <p className="text-gray-600 mb-4">
+              This action will permanently delete all courses. This data will be lost forever.
+            </p>
+            <div className="text-center mb-4">
+              {countdown > 0 ? (
+                <>
+                  <span className="text-2xl font-bold text-purple-600">{countdown}</span>
+                  <span className="text-gray-600 ml-2">seconds remaining</span>
+                </>
+              ) : (
+                <span className="text-lg font-medium text-red-600">Ready to confirm deletion</span>
+              )}
+            </div>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowWarning(false);
+                  setCanConfirm(false);
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmClearAll}
+                className={`px-4 py-2 rounded-md transition-colors ${
+                  canConfirm
+                    ? 'bg-red-600 text-white hover:bg-red-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+                disabled={!canConfirm}
+              >
+                {countdown > 0 ? `Confirm (${countdown}s)` : 'Confirm Deletion'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="mt-12 py-6 border-t border-gray-200">
