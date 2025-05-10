@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 
 interface Course {
   id: string;
@@ -30,6 +31,26 @@ const CourseForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check for duplicate course
+    const isDuplicate = courses.some(
+      course => 
+        course.course_name.toLowerCase() === formData.course_name.toLowerCase() &&
+        course.instructor_name.toLowerCase() === formData.instructor_name.toLowerCase()
+    );
+
+    if (isDuplicate) {
+      toast.error('This course with the same instructor already exists!', {
+        duration: 4000,
+        position: 'top-center',
+        style: {
+          background: '#2E073F',
+          color: '#fff',
+        },
+      });
+      return;
+    }
+
     const newCourse = {
       ...formData,
       id: Date.now().toString()
@@ -44,6 +65,15 @@ const CourseForm = () => {
       instructor_name: '',
       status: 'in_progress'
     });
+    
+    toast.success('Course added successfully!', {
+      duration: 3000,
+      position: 'top-center',
+      style: {
+        background: '#7A1CAC',
+        color: '#fff',
+      },
+    });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -56,6 +86,7 @@ const CourseForm = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-6 pt-8">
+      <Toaster />
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
@@ -67,6 +98,7 @@ const CourseForm = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
               required
+              placeholder="e.g., React Fundamentals"
             />
           </div>
           <div>
@@ -78,6 +110,7 @@ const CourseForm = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
               required
+              placeholder="e.g., 10"
             />
           </div>
           <div>
@@ -100,6 +133,7 @@ const CourseForm = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
               required
+              placeholder="e.g., John Doe"
             />
           </div>
           <div>
