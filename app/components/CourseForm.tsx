@@ -272,63 +272,63 @@ const CourseForm = () => {
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
-                <label className="block text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Course Name</label>
+                <label className="block text-base sm:text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Course Name</label>
                 <input
                   type="text"
                   name="course_name"
                   value={formData.course_name}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-base sm:text-sm"
                   required
                   placeholder="e.g., React Fundamentals"
                 />
               </div>
               <div>
-                <label className="block text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Hours</label>
+                <label className="block text-base sm:text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Hours</label>
                 <input
                   type="number"
                   name="hours"
                   value={formData.hours || ''}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-base sm:text-sm"
                   required
                   min="0"
                   placeholder="e.g., 10"
                 />
               </div>
               <div>
-                <label className="block text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Tags</label>
+                <label className="block text-base sm:text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Tags</label>
                 <input
                   type="text"
                   name="tags"
                   value={formData.tags}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-base sm:text-sm"
                   placeholder="e.g., React, JavaScript"
                 />
               </div>
               <div>
-                <label className="block text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Instructor Name</label>
+                <label className="block text-base sm:text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Instructor Name</label>
                 <input
                   type="text"
                   name="instructor_name"
                   value={formData.instructor_name}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-base sm:text-sm"
                   required
                   placeholder="e.g., John Doe"
                 />
               </div>
               <div>
-                <label className="block text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Status</label>
+                <label className="block text-base sm:text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Status</label>
                 <select
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-base sm:text-sm"
                 >
-                  <option value="in_progress">In Progress</option>
-                  <option value="finished">Finished</option>
+                  <option value="in_progress" className="text-base sm:text-sm">In Progress</option>
+                  <option value="finished" className="text-base sm:text-sm">Finished</option>
                 </select>
               </div>
               <div className="flex items-end gap-2">
@@ -372,45 +372,45 @@ const CourseForm = () => {
             <div className="bg-white rounded-lg p-6">
               <div className="flex flex-wrap gap-4 items-end mb-6">
                 <div className="flex-1 min-w-[200px]">
-                  <label className="block text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Filter by Tag</label>
+                  <label className="block text-base sm:text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Filter by Tag</label>
                   <select
                     value={filters.tag}
                     onChange={(e) => handleFilterChange('tag', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-base sm:text-sm"
                   >
-                    <option value="">All Tags</option>
+                    <option value="" className="text-base sm:text-sm">All Tags</option>
                     {uniqueTags.map(tag => (
-                      <option key={tag} value={tag}>
+                      <option key={tag} value={tag} className="text-base sm:text-sm">
                         {tag} ({filterStats.tag[tag]})
                       </option>
                     ))}
                   </select>
                 </div>
                 <div className="flex-1 min-w-[200px]">
-                  <label className="block text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Filter by Instructor</label>
+                  <label className="block text-base sm:text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Filter by Instructor</label>
                   <select
                     value={filters.instructor}
                     onChange={(e) => handleFilterChange('instructor', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-base sm:text-sm"
                   >
-                    <option value="">All Instructors</option>
+                    <option value="" className="text-base sm:text-sm">All Instructors</option>
                     {uniqueInstructors.map(instructor => (
-                      <option key={instructor} value={instructor}>
+                      <option key={instructor} value={instructor} className="text-base sm:text-sm">
                         {instructor} ({filterStats.instructor[instructor]})
                       </option>
                     ))}
                   </select>
                 </div>
                 <div className="flex-1 min-w-[200px]">
-                  <label className="block text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Filter by Status</label>
+                  <label className="block text-base sm:text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Filter by Status</label>
                   <select
                     value={filters.status}
                     onChange={(e) => handleFilterChange('status', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-base sm:text-sm"
                   >
-                    <option value="">All Status</option>
+                    <option value="" className="text-base sm:text-sm">All Status</option>
                     {uniqueStatuses.map(status => (
-                      <option key={status} value={status}>
+                      <option key={status} value={status} className="text-base sm:text-sm">
                         {status === 'finished' ? 'Finished' : 'In Progress'} ({filterStats.status[status]})
                       </option>
                     ))}
@@ -460,95 +460,99 @@ const CourseForm = () => {
           {/* Table Section */}
           <div className="relative p-[2px] rounded-lg bg-gradient-to-r from-purple-600 via-yellow-400 to-black">
             <div className="bg-white rounded-lg overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr className="bg-gradient-to-r from-purple-50 via-purple-100/50 to-purple-50 border-b border-purple-200">
-                    <th className="px-6 py-4 text-left text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Course Name</th>
-                    <th className="px-6 py-4 text-left text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Hours</th>
-                    <th className="px-6 py-4 text-left text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Tags</th>
-                    <th className="px-6 py-4 text-left text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Instructor</th>
-                    <th className="px-6 py-4 text-left text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-4 text-left text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {currentCourses.map((course) => (
-                    <tr key={course.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{course.course_name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{course.hours}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {course.tags.split(',').map((tag, index) => (
-                          <span
-                            key={index}
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mr-1 mb-1 ${
-                              filters.tag === tag.trim()
-                                ? 'bg-purple-100 text-purple-800'
-                                : 'bg-gray-100 text-gray-800'
-                            }`}
-                          >
-                            {tag.trim()}
-                          </span>
-                        ))}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{course.instructor_name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          course.status === 'finished' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {course.status === 'finished' ? 'Finished' : 'In Progress'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleEdit(course)}
-                            className="text-purple-600 hover:text-purple-900"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(course.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-gray-50">
-                  <tr>
-                    <td colSpan={6} className="px-6 py-4">
-                      <div className="flex justify-between items-center">
-                        <div className="text-sm text-gray-700">
-                          Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
-                          <span className="font-medium">{Math.min(endIndex, filteredCourses.length)}</span> of{' '}
-                          <span className="font-medium">{filteredCourses.length}</span> results
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
+              <div className="overflow-x-auto">
+                <div className="min-w-[800px]">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead>
+                      <tr className="bg-gradient-to-r from-purple-50 via-purple-100/50 to-purple-50 border-b border-purple-200">
+                        <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[0.875rem] sm:text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Course Name</th>
+                        <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[0.875rem] sm:text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Hours</th>
+                        <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[0.875rem] sm:text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Tags</th>
+                        <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[0.875rem] sm:text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Instructor</th>
+                        <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[0.875rem] sm:text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Status</th>
+                        <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[0.875rem] sm:text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {currentCourses.map((course) => (
+                        <tr key={course.id}>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[0.75rem] sm:text-sm text-gray-900">{course.course_name}</td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[0.75rem] sm:text-sm text-gray-900">{course.hours}</td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[0.75rem] sm:text-sm text-gray-900">
+                            {course.tags.split(',').map((tag, index) => (
+                              <span
+                                key={index}
+                                className={`inline-flex items-center px-1.5 sm:px-2.5 py-0.5 rounded-full text-base sm:text-xs font-medium mr-1 mb-1 ${
+                                  filters.tag === tag.trim()
+                                    ? 'bg-purple-100 text-purple-800'
+                                    : 'bg-gray-100 text-gray-800'
+                                }`}
+                              >
+                                {tag.trim()}
+                              </span>
+                            ))}
+                          </td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[0.75rem] sm:text-sm text-gray-900">{course.instructor_name}</td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                            <span className={`px-1.5 sm:px-2 inline-flex text-base sm:text-xs leading-5 font-semibold rounded-full ${
+                              course.status === 'finished' 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {course.status === 'finished' ? 'Finished' : 'In Progress'}
+                            </span>
+                          </td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[0.75rem] sm:text-sm font-medium">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleEdit(course)}
+                                className="text-purple-600 hover:text-purple-900"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDelete(course.id)}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-gray-50">
+                      <tr>
+                        <td colSpan={6} className="px-4 sm:px-6 py-3 sm:py-4">
+                          <div className="flex justify-between items-center">
+                            <div className="text-[0.75rem] sm:text-sm text-gray-700">
+                              Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+                              <span className="font-medium">{Math.min(endIndex, filteredCourses.length)}</span> of{' '}
+                              <span className="font-medium">{filteredCourses.length}</span> results
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
               
               {/* Pagination Controls */}
               {totalPages > 1 && (
-                <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div className="bg-white px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between border-t border-gray-200">
                   <div className="flex-1 flex justify-between sm:hidden">
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="relative inline-flex items-center px-3 py-1.5 border border-gray-300 text-[0.75rem] font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Previous
                     </button>
                     <button
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="ml-3 relative inline-flex items-center px-3 py-1.5 border border-gray-300 text-[0.75rem] font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Next
                     </button>
