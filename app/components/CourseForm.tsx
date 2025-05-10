@@ -267,12 +267,12 @@ const CourseForm = () => {
       <Toaster />
       
       {/* Course Input Form */}
-      <div className="relative p-[2px] rounded-lg bg-gradient-to-r from-purple-dark/30 via-purple-medium/30 to-purple-light/30 mb-8">
+      <div className="relative p-[2px] rounded-lg bg-gradient-to-r from-purple-600 via-yellow-400 to-black mb-8">
         <div className="bg-white rounded-lg p-6">
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-purple-600 mb-1">Course Name</label>
+                <label className="block text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Course Name</label>
                 <input
                   type="text"
                   name="course_name"
@@ -284,7 +284,7 @@ const CourseForm = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-purple-600 mb-1">Hours</label>
+                <label className="block text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Hours</label>
                 <input
                   type="number"
                   name="hours"
@@ -297,7 +297,7 @@ const CourseForm = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-purple-600 mb-1">Tags</label>
+                <label className="block text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Tags</label>
                 <input
                   type="text"
                   name="tags"
@@ -308,7 +308,7 @@ const CourseForm = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-purple-600 mb-1">Instructor Name</label>
+                <label className="block text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Instructor Name</label>
                 <input
                   type="text"
                   name="instructor_name"
@@ -320,7 +320,7 @@ const CourseForm = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-purple-600 mb-1">Status</label>
+                <label className="block text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Status</label>
                 <select
                   name="status"
                   value={formData.status}
@@ -354,11 +354,11 @@ const CourseForm = () => {
       </div>
 
       {/* Filters Section */}
-      <div className="relative p-[2px] rounded-lg bg-gradient-to-r from-purple-dark/30 via-purple-medium/30 to-purple-light/30 mb-8">
+      <div className="relative p-[2px] rounded-lg bg-gradient-to-r from-purple-600 via-yellow-400 to-black mb-8">
         <div className="bg-white rounded-lg p-6">
           <div className="flex flex-wrap gap-4 items-end mb-6">
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium text-purple-600 mb-1">Filter by Tag</label>
+              <label className="block text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Filter by Tag</label>
               <select
                 value={filters.tag}
                 onChange={(e) => handleFilterChange('tag', e.target.value)}
@@ -373,7 +373,7 @@ const CourseForm = () => {
               </select>
             </div>
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium text-purple-600 mb-1">Filter by Instructor</label>
+              <label className="block text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Filter by Instructor</label>
               <select
                 value={filters.instructor}
                 onChange={(e) => handleFilterChange('instructor', e.target.value)}
@@ -388,7 +388,7 @@ const CourseForm = () => {
               </select>
             </div>
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium text-purple-600 mb-1">Filter by Status</label>
+              <label className="block text-[1.0625rem] font-medium text-purple-600 mb-1 uppercase">Filter by Status</label>
               <select
                 value={filters.status}
                 onChange={(e) => handleFilterChange('status', e.target.value)}
@@ -444,17 +444,17 @@ const CourseForm = () => {
       </div>
 
       {/* Table Section */}
-      <div className="relative p-[2px] rounded-lg bg-gradient-to-r from-purple-dark/30 via-purple-medium/30 to-purple-light/30">
+      <div className="relative p-[2px] rounded-lg bg-gradient-to-r from-purple-600 via-yellow-400 to-black">
         <div className="bg-white rounded-lg overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead>
               <tr className="bg-gradient-to-r from-purple-50 via-purple-100/50 to-purple-50 border-b border-purple-200">
-                <th className="px-6 py-4 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">Course Name</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">Hours</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">Tags</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">Instructor</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-4 text-left text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Course Name</th>
+                <th className="px-6 py-4 text-left text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Hours</th>
+                <th className="px-6 py-4 text-left text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Tags</th>
+                <th className="px-6 py-4 text-left text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Instructor</th>
+                <th className="px-6 py-4 text-left text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-[1.0625rem] font-medium text-purple-700 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
