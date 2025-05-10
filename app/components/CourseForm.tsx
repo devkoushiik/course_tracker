@@ -15,6 +15,7 @@ interface Course {
 const CourseForm = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const rowsPerPage = 10;
   const [formData, setFormData] = useState<Omit<Course, 'id'>>({
     course_name: '',
@@ -58,47 +59,67 @@ const CourseForm = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Check for duplicate course
-    const isDuplicate = courses.some(
-      course => 
-        course.course_name.toLowerCase() === formData.course_name.toLowerCase() &&
-        course.instructor_name.toLowerCase() === formData.instructor_name.toLowerCase()
-    );
-
-    if (isDuplicate) {
-      toast.error('This course with the same instructor already exists!', {
-        duration: 4000,
+    if (editingCourse) {
+      // Update existing course
+      const updatedCourses = courses.map(course => 
+        course.id === editingCourse.id 
+          ? { ...formData, id: course.id }
+          : course
+      );
+      setCourses(updatedCourses);
+      localStorage.setItem('courses', JSON.stringify(updatedCourses));
+      setEditingCourse(null);
+      toast.success('Course updated successfully!', {
+        duration: 3000,
         position: 'top-center',
         style: {
-          background: '#2E073F',
+          background: '#7A1CAC',
           color: '#fff',
         },
       });
-      return;
+    } else {
+      // Add new course
+      const isDuplicate = courses.some(
+        course => 
+          course.course_name.toLowerCase() === formData.course_name.toLowerCase() &&
+          course.instructor_name.toLowerCase() === formData.instructor_name.toLowerCase()
+      );
+
+      if (isDuplicate) {
+        toast.error('This course with the same instructor already exists!', {
+          duration: 4000,
+          position: 'top-center',
+          style: {
+            background: '#2E073F',
+            color: '#fff',
+          },
+        });
+        return;
+      }
+
+      const newCourse = {
+        ...formData,
+        id: Date.now().toString()
+      };
+      const updatedCourses = [...courses, newCourse];
+      setCourses(updatedCourses);
+      localStorage.setItem('courses', JSON.stringify(updatedCourses));
+      toast.success('Course added successfully!', {
+        duration: 3000,
+        position: 'top-center',
+        style: {
+          background: '#7A1CAC',
+          color: '#fff',
+        },
+      });
     }
 
-    const newCourse = {
-      ...formData,
-      id: Date.now().toString()
-    };
-    const updatedCourses = [...courses, newCourse];
-    setCourses(updatedCourses);
-    localStorage.setItem('courses', JSON.stringify(updatedCourses));
     setFormData({
       course_name: '',
       hours: 0,
       tags: '',
       instructor_name: '',
       status: 'in_progress'
-    });
-    
-    toast.success('Course added successfully!', {
-      duration: 3000,
-      position: 'top-center',
-      style: {
-        background: '#7A1CAC',
-        color: '#fff',
-      },
     });
   };
 
@@ -108,6 +129,42 @@ const CourseForm = () => {
       ...prev,
       [name]: name === 'hours' ? Number(value) : value
     }));
+  };
+
+  const handleEdit = (course: Course) => {
+    setEditingCourse(course);
+    setFormData({
+      course_name: course.course_name,
+      hours: course.hours,
+      tags: course.tags,
+      instructor_name: course.instructor_name,
+      status: course.status
+    });
+  };
+
+  const handleDelete = (courseId: string) => {
+    const updatedCourses = courses.filter(course => course.id !== courseId);
+    setCourses(updatedCourses);
+    localStorage.setItem('courses', JSON.stringify(updatedCourses));
+    toast.success('Course deleted successfully!', {
+      duration: 3000,
+      position: 'top-center',
+      style: {
+        background: '#7A1CAC',
+        color: '#fff',
+      },
+    });
+  };
+
+  const handleCancel = () => {
+    setEditingCourse(null);
+    setFormData({
+      course_name: '',
+      hours: 0,
+      tags: '',
+      instructor_name: '',
+      status: 'in_progress'
+    });
   };
 
   // Pagination calculations
@@ -185,13 +242,22 @@ const CourseForm = () => {
                 <option value="finished">Finished</option>
               </select>
             </div>
-            <div className="flex items-end">
+            <div className="flex items-end gap-2">
               <button
                 type="submit"
-                className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition-colors"
+                className="flex-1 bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition-colors"
               >
-                Add Course
+                {editingCourse ? 'Update Course' : 'Add Course'}
               </button>
+              {editingCourse && (
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+              )}
             </div>
           </div>
         </form>
@@ -207,6 +273,7 @@ const CourseForm = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tags</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Instructor</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -224,6 +291,22 @@ const CourseForm = () => {
                     }`}>
                       {course.status === 'finished' ? 'Finished' : 'In Progress'}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleEdit(course)}
+                        className="text-purple-600 hover:text-purple-900"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(course.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
