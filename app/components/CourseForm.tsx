@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 
 interface Course {
-  id: string;
+  _id?: string;
   course_name: string;
   hours: number;
   tags: string;
@@ -31,7 +31,7 @@ const CourseForm = () => {
   const [countdown, setCountdown] = useState(10);
   const [canConfirm, setCanConfirm] = useState(false);
   const rowsPerPage = 10;
-  const [formData, setFormData] = useState<Omit<Course, 'id'>>({
+  const [formData, setFormData] = useState<Omit<Course, '_id'>>({
     course_name: '',
     hours: 0,
     tags: '',
@@ -40,12 +40,19 @@ const CourseForm = () => {
   });
 
   useEffect(() => {
-    // Load saved courses from localStorage
-    const savedCourses = localStorage.getItem('courses');
-    if (savedCourses) {
-      setCourses(JSON.parse(savedCourses));
-    }
+    fetchCourses();
   }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const response = await fetch('/api/courses');
+      if (!response.ok) throw new Error('Failed to fetch courses');
+      const data = await response.json();
+      setCourses(data);
+    } catch (error) {
+      toast.error('Failed to load courses');
+    }
+  };
 
   // Calculate filter stats
   const filterStats = useMemo(() => {
@@ -89,71 +96,67 @@ const CourseForm = () => {
   const uniqueInstructors = useMemo(() => Object.keys(filterStats.instructor), [filterStats.instructor]);
   const uniqueStatuses = useMemo(() => Object.keys(filterStats.status), [filterStats.status]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingCourse) {
-      // Update existing course
-      const updatedCourses = courses.map(course => 
-        course.id === editingCourse.id 
-          ? { ...formData, id: course.id }
-          : course
-      );
-      setCourses(updatedCourses);
-      localStorage.setItem('courses', JSON.stringify(updatedCourses));
-      setEditingCourse(null);
-      toast.success('Course updated successfully!', {
-        duration: 3000,
-        position: 'top-center',
-        style: {
-          background: '#7A1CAC',
-          color: '#fff',
-        },
-      });
-    } else {
-      // Add new course
-      const isDuplicate = courses.some(
-        course => 
-          course.course_name.toLowerCase() === formData.course_name.toLowerCase() &&
-          course.instructor_name.toLowerCase() === formData.instructor_name.toLowerCase()
-      );
+    try {
+      if (editingCourse) {
+        // Update existing course
+        const response = await fetch('/api/courses', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...formData, _id: editingCourse._id })
+        });
 
-      if (isDuplicate) {
-        toast.error('This course with the same instructor already exists!', {
-          duration: 4000,
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to update course');
+        }
+
+        await fetchCourses();
+        setEditingCourse(null);
+        toast.success('Course updated successfully!', {
+          duration: 3000,
           position: 'top-center',
           style: {
-            background: '#2E073F',
+            background: '#7A1CAC',
             color: '#fff',
           },
         });
-        return;
+      } else {
+        // Add new course
+        const response = await fetch('/api/courses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to add course');
+        }
+
+        await fetchCourses();
+        toast.success('Course added successfully!', {
+          duration: 3000,
+          position: 'top-center',
+          style: {
+            background: '#7A1CAC',
+            color: '#fff',
+          },
+        });
       }
 
-      const newCourse = {
-        ...formData,
-        id: Date.now().toString()
-      };
-      const updatedCourses = [...courses, newCourse];
-      setCourses(updatedCourses);
-      localStorage.setItem('courses', JSON.stringify(updatedCourses));
-      toast.success('Course added successfully!', {
-        duration: 3000,
-        position: 'top-center',
-        style: {
-          background: '#7A1CAC',
-          color: '#fff',
-        },
+      setFormData({
+        course_name: '',
+        hours: 0,
+        tags: '',
+        instructor_name: '',
+        status: 'in_progress'
       });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'An error occurred');
     }
-
-    setFormData({
-      course_name: '',
-      hours: 0,
-      tags: '',
-      instructor_name: '',
-      status: 'in_progress'
-    });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -175,18 +178,26 @@ const CourseForm = () => {
     });
   };
 
-  const handleDelete = (courseId: string) => {
-    const updatedCourses = courses.filter(course => course.id !== courseId);
-    setCourses(updatedCourses);
-    localStorage.setItem('courses', JSON.stringify(updatedCourses));
-    toast.success('Course deleted successfully!', {
-      duration: 3000,
-      position: 'top-center',
-      style: {
-        background: '#7A1CAC',
-        color: '#fff',
-      },
-    });
+  const handleDelete = async (courseId: string) => {
+    try {
+      const response = await fetch(`/api/courses?id=${courseId}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) throw new Error('Failed to delete course');
+
+      await fetchCourses();
+      toast.success('Course deleted successfully!', {
+        duration: 3000,
+        position: 'top-center',
+        style: {
+          background: '#7A1CAC',
+          color: '#fff',
+        },
+      });
+    } catch (error) {
+      toast.error('Failed to delete course');
+    }
   };
 
   const handleCancel = () => {
@@ -236,20 +247,32 @@ const CourseForm = () => {
     return () => clearTimeout(timer);
   }, [showWarning, countdown]);
 
-  const confirmClearAll = () => {
+  const confirmClearAll = async () => {
     if (!canConfirm) return;
-    setCourses([]);
-    localStorage.removeItem('courses');
-    setShowWarning(false);
-    setCanConfirm(false);
-    toast.success('All courses have been cleared!', {
-      duration: 3000,
-      position: 'top-center',
-      style: {
-        background: '#7A1CAC',
-        color: '#fff',
-      },
-    });
+    try {
+      // Delete all courses one by one
+      for (const course of courses) {
+        if (course._id) {
+          await fetch(`/api/courses?id=${course._id}`, {
+            method: 'DELETE'
+          });
+        }
+      }
+      
+      await fetchCourses();
+      setShowWarning(false);
+      setCanConfirm(false);
+      toast.success('All courses have been cleared!', {
+        duration: 3000,
+        position: 'top-center',
+        style: {
+          background: '#7A1CAC',
+          color: '#fff',
+        },
+      });
+    } catch (error) {
+      toast.error('Failed to clear all courses');
+    }
   };
 
   // Pagination calculations with filtered courses
@@ -476,7 +499,7 @@ const CourseForm = () => {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {currentCourses.map((course) => (
-                        <tr key={course.id}>
+                        <tr key={course._id}>
                           <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[0.75rem] sm:text-sm text-gray-900">{course.course_name}</td>
                           <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[0.75rem] sm:text-sm text-gray-900">{course.hours}</td>
                           <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[0.75rem] sm:text-sm text-gray-900">
@@ -512,7 +535,7 @@ const CourseForm = () => {
                                 Edit
                               </button>
                               <button
-                                onClick={() => handleDelete(course.id)}
+                                onClick={() => handleDelete(course._id || '')}
                                 className="text-red-600 hover:text-red-900"
                               >
                                 Delete
