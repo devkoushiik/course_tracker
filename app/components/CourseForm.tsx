@@ -293,7 +293,8 @@ const CourseForm = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-base sm:text-sm"
                   required
                   min="0"
-                  placeholder="e.g., 10"
+                  step="0.1"
+                  placeholder="e.g., 6.4"
                 />
               </div>
               <div>
@@ -447,7 +448,7 @@ const CourseForm = () => {
                 <div className="bg-purple-50 rounded-lg p-4">
                   <h3 className="text-sm font-medium text-purple-800">Total Hours</h3>
                   <p className="mt-1 text-2xl font-semibold text-purple-900">
-                    {filteredCourses.reduce((sum, course) => sum + course.hours, 0)}
+                    {filteredCourses.reduce((sum, course) => sum + course.hours, 0).toFixed(1)}
                     <span className="text-sm font-normal text-purple-600 ml-2">
                       {filters.tag || filters.instructor || filters.status ? '(Filtered)' : ''}
                     </span>
